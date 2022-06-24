@@ -1,0 +1,13 @@
+OnlyContext{arms: { A1: constant(0.9) 
+	A2: constant(0.3)
+	A3: constant(0.3)
+	A4: constant(0.3)
+	A5: constant(0.3)
+	A6: constant(0.3)
+	A7: constant(0.3)
+	A8: constant(0.3) 
+	A9: constant(0.3) 
+	A10: constant(0.3)   
+	} }
+Trace: (OnlyContext, 1000)
+
