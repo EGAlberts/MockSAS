@@ -24,9 +24,9 @@ environment_grammar = """
     environment_definition:  "features: {" environpair+ "}" 
     environpair:  CNAME ":" (NUMBER | dist) 
     actionpair: CNAME ":" dist
-    dist: (normal | truncated_normal | notnormal | inactive | constant)
-    normal: "normal(" MEAN "," VARIANCE ")"
-    notnormal: "notnormal(" MEAN "," VARIANCE ")"  
+    dist: (normal | truncated_normal | logisitic | inactive | constant)
+    normal: "normal(" MEAN "," STDEV ")"
+    logisitic: "logistic(" MEAN "," STDEV ")"  
     truncated_normal: "truncnorm(" LOWER "," UPPER "," MEAN "," STDEV ")"
     constant: "constant(" VALUE ")"
     inactive: "inactive()"
@@ -52,8 +52,8 @@ class EnvironmentTransformer(Transformer):
     all_arms = set()
 
     def start(self,arg):
-        print(arg)
-        input("startpause")
+        #print(arg)
+        #input("startpause")
         return_dict = {}
 
         if(len(arg) == 3):
@@ -110,8 +110,8 @@ class EnvironmentTransformer(Transformer):
         return_dict["all_arms"] = self.all_arms
         return_dict["reward_generator"] = r_gen
         return_dict["feature_generator"] = f_gen
-        pprint.pprint(return_dict)
-        input("return pause")
+        #pprint.pprint(return_dict)
+        #input("return pause")
         return return_dict
 
     def parse_dictionary(self, pair_list):
@@ -146,7 +146,7 @@ class EnvironmentTransformer(Transformer):
         # for var in args:
         #     var_name, var_value = var
         #     if(var_name in variable_dict): raise RuntimeError("Same variable specified multiple times: variable names not unique")
-
+ 
         #     variable_dict[var_name] = var_value
 
         # return variable_dict
@@ -158,7 +158,6 @@ class EnvironmentTransformer(Transformer):
         return arg
 
     def context(self,argss):
-
         # context_dict = {}
         action_dict = {}
         variable_dict = None
@@ -168,42 +167,81 @@ class EnvironmentTransformer(Transformer):
             context_name, action_pairs = argss
       
         for action_pair in action_pairs:
-            #print(action_pairs)
-            #print(variable_dict)
-            #input("pause")
             action_name, action_gen = action_pair
             if(callable(action_gen)): action_gen = action_gen(variable_dict) #if it is not a generator yet that implies it needs to use the variables.
             self.all_arms.add(action_name)
             if(action_name in action_dict): raise RuntimeError("Same action specified multiple times: action names not unique within context")
             action_dict[action_name] = action_gen
         
-        # context_dict[context_name] = action_dict
-        #pprint.pprint(action_dict)
-        #input("yujhyuh")
-        #print(next(action_dict[input("arm")]))
-
         #code.interact(local=locals())
-        #input("pause2")
         return [context_name, action_dict, variable_dict]
     def actionpair(self,arg): return arg
     def environpair(self,arg): return arg
     def dist(self,args): return args[0]
 
-    def environment_grabber(self):
-        return "foo"
+    # def environment_grabber(self):
+    #     return "foo"
     
     def normal(self,argg):
-        def normal_generator():
-            while True:
+        def normal_generator(variables = None):
+            if(variables):
+                while True:
+                    try:
+                        env_state = self.environment_grabber()
+                    except AttributeError:
+                        env_state = variables
+                    final_params = []
+                    for para in argg:
+                        if(type(para) == str):
+                            variable_value = env_state[para]
+                            if(isinstance(variable_value,GeneratorType)):
+                                final_params.append(next(variable_value))
+                            else:
+                                final_params.append(variable_value)
+                        else:
+                            final_params.append(para)
+                    mean, stdev = final_params                    
 
-                
-                yield np.random.normal(loc=argg[0],scale=np.sqrt(argg[1]))
-        return normal_generator()
-    def notnormal(self,argg):
-        def notnormal_generator():
-            while True:
-                yield np.random.logistic(loc=argg[0],scale=np.sqrt(argg[1]))
-        return notnormal_generator()
+                    yield np.random.normal(loc=mean,scale=stdev)
+            else:
+                mean, stdev = argg
+                while True:
+                    yield np.random.normal(loc=mean,scale=stdev)
+
+        if(any(type(param) == str for param in argg)):
+            return normal_generator
+        else:
+            return normal_generator()
+
+    def logistic(self,argg):
+        def logistic_generator(variables = None):
+            if(variables):
+                while True:
+                    try:
+                        env_state = self.environment_grabber()
+                    except AttributeError:
+                        env_state = variables
+                    final_params = []
+                    for para in argg:
+                        if(type(para) == str):
+                            variable_value = env_state[para]
+                            if(isinstance(variable_value,GeneratorType)):
+                                final_params.append(next(variable_value))
+                            else:
+                                final_params.append(variable_value)
+                        else:
+                            final_params.append(para)
+                    mean, stdev = final_params                    
+
+                    yield np.random.logistic(loc=mean,scale=stdev)
+            else:
+                mean, stdev = argg
+                while True:
+                    yield np.random.logistic(loc=mean,scale=stdev)
+        if(any(type(param) == str for param in argg)):
+            return logistic_generator
+        else:
+            return logistic_generator()
     def inactive(self, args):
         def empty_generator():
             while True:
@@ -212,15 +250,24 @@ class EnvironmentTransformer(Transformer):
     def truncated_normal(self, args):
         def truncnorm_generator(variables = None):
             if(variables):
-                final_params = []
-                for para in args:
-                    if(type(para) == str):
-                        final_params.append(variables[para])
-                    else:
-                        final_params.append(para)
-                lower, upper, mean, stdev = final_params
-                a, b = (lower - mean) / stdev, (upper - mean) / stdev
                 while True:
+                    try:
+                        env_state = self.environment_grabber()
+                    except AttributeError:
+                        env_state = variables
+                    final_params = []
+                    for para in args:
+                        if(type(para) == str):
+                            variable_value = env_state[para]
+                            if(isinstance(variable_value,GeneratorType)):
+                                final_params.append(next(variable_value))
+                            else:
+                                final_params.append(variable_value)
+                        else:
+                            final_params.append(para)
+                    lower, upper, mean, stdev = final_params
+                    a, b = (lower - mean) / stdev, (upper - mean) / stdev
+                
                     yield truncnorm.rvs(a,b, loc= mean, scale=stdev)
             else:
                 lower, upper, mean, stdev = args
@@ -233,18 +280,16 @@ class EnvironmentTransformer(Transformer):
         else:
             return truncnorm_generator()
     def constant(self,args):
-        # def another_generator(variables):
-        #     while True:
-        #         yield variables[args[0]]
 
         def const_generator(variables = None):
             if(variables):
                 while True: 
                     #here you need to grab the environment state and incorporate it into the potential yield.
                     #the grabber can be a function...
-                    print(self.environment_grabber())
-                    
-                    env_state = self.environment_grabber()
+                    try:
+                        env_state = self.environment_grabber()
+                    except AttributeError:
+                        env_state = variables
 
                     environment_var = env_state[args[0]]
                     if(isinstance(environment_var,GeneratorType)):
@@ -253,7 +298,7 @@ class EnvironmentTransformer(Transformer):
                         yield env_state[args[0]]
             else:
                 while True: 
-                    print(self.environment_grabber())
+                    #print(self.environment_grabber())
                     yield args[0]
         if(type(args[0]) == str):  return const_generator
         else: return const_generator()
@@ -263,9 +308,6 @@ class EnvironmentTransformer(Transformer):
             return float(args.value)
         except ValueError:
             return args.value
-    #     if(type(args[0]) == str):
-    #         print(args)
-    #         input("val")
 
     VARIABLE = str
     indefinite = tuple

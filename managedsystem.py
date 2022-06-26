@@ -1,4 +1,3 @@
-from email import generator
 from masced_bandits.bandits import init_bandit
 from masced_bandits.bandit_options import initialize_arguments
 from environmentgrammar import environment_grammar, EnvironmentTransformer
@@ -7,9 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statistics import mean
 import pprint 
-
-def notfoo(something):
-    return "notfoo"
+from math import floor
 
 class MockSAS:
     def __init__(self, num_sys, policies, parse_tree):
@@ -33,8 +30,11 @@ class MockSAS:
                 managed_busy = []
                 for managed in m_sys.managed:
                     acks = managed.notify_observers()
-                    if(managed.environment):
+                    try:
                         managed.environment.notify_observers()
+                    except AttributeError:
+                        #no environment'
+                        pass
                     #print("acks:" + str(acks))
                     busy = all(acks)
                     #print("busy: " + str(busy))
@@ -118,51 +118,3 @@ class MockSAS:
                 for obs in self._observers:
                     acks.append(obs.notify(round_dists))
                 return acks
-
-
-
-parser = Lark(environment_grammar)
-mission_statement = "ComplexSystem.txt"
-try:
-    with open(mission_statement, 'r') as source:
-        source_code = source.read()
-except IOError:
-    print('Something is wrong with the source code file')
-
-try:
-    parse_tree = parser.parse(source_code)
-    #print(parse_tree.pretty())
-    
-    
-except Exception as e:
-    print("Syntax error, details below: \n")
-    print(e)
-    exit(1)
-
-final_res = {}
-
-configs = [[{'name': "UCB", 'formula': "TN"}], [{'name': "egreedy", 'epsilon': "0.1"}], [{'name': "egreedy", 'epsilon': "0.2"}],[{'name': "egreedy", 'epsilon': "0.3"}],[{'name': "egreedy", 'epsilon': "0.4"}],[{'name': "egreedy", 'epsilon': "0.5"}], [{'name': "egreedy", 'epsilon': "0.6"}],[{'name': "egreedy", 'epsilon': "0.7"}],[{'name': "egreedy", 'epsilon': "0.8"}],[{'name': "egreedy", 'epsilon': "0.9"}],[{'name': "egreedy", 'epsilon': "1.0"}]]
-
-for config in configs:
-    final_res[str( str(config[0]['name']) + str(config[0].get('formula',""))  + str(config[0].get('epsilon',"")) + str(config[0].get('decay_rate',"")))] = []
-for i in range(1):
-    all_res = {}
-    for config in configs:
-        #input(str(config) + ">")
-        np.random.seed(i * 1337)
-        mksas = MockSAS(1,config, parse_tree)
-        res = mksas.operation({})
-        for key in res.keys():
-            #input(str(key) + ">>")
-            #input(str(res[key][-1]) + ">>>")
-            final_res[str(str(config[0]['name']) + str(config[0].get('formula',""))  + str(config[0].get('epsilon',"")) + str(config[0].get('decay_rate',"")))].append((res[key][-1]))
-            
-pprint.pprint(final_res)
-print(str(final_res.keys()))
-
-plt.boxplot(final_res.values())
-plt.xticks(ticks=list(range(1,len(configs)+1,1)),labels=final_res.keys())
-
-#plt.xticks(final_res.keys())
-#plt.legend()
-plt.show()  
