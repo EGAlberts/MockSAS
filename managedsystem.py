@@ -29,12 +29,12 @@ class MockSAS:
             while all(managed_busy):
                 managed_busy = []
                 for managed in m_sys.managed:
-                    acks = managed.notify_observers()
                     try:
                         managed.environment.notify_observers()
                     except AttributeError:
                         #no environment'
                         pass
+                    acks = managed.notify_observers() #check whether this order makes sense
                     #print("acks:" + str(acks))
                     busy = all(acks)
                     #print("busy: " + str(busy))
@@ -93,6 +93,7 @@ class MockSAS:
         def get_observations(self):
             return self.observations
         def notify(self, new_observations):
+
             self.observations = new_observations
           
         def register_observer(self, observer):

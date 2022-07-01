@@ -1,0 +1,8 @@
+SingularContext{arms: { 
+	ThreeServers: constant(0.715)
+	SixServers:  constant(0.614)
+	EightServers:    constant(0.508)
+	ElevenServers:   constant(0.348)
+	ThirteenServers: constant(0.241)
+	} }
+Trace: (SingularContext, 500)

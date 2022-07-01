@@ -1,0 +1,13 @@
+StochasticContext{
+	features: {
+		noise_due_service_time: truncnorm(0.0,0.5,0.2,0.2)
+		service_time: 10 
+	}
+	arms: { 
+	ThreeServers:    truncnorm(0.0,my_function(10),0.715,0.04) 
+	SixServers:      truncnorm(0.0,1.0,0.614,0.06) 
+	EightServers:    truncnorm(0.0,1.0,0.508,0.06) 
+	ElevenServers:   truncnorm(0.0,1.0,0.348,0.06) 
+	ThirteenServers: truncnorm(0.0,1.0,0.241,0.06)
+	} }
+Trace: (StochasticContext, 500)

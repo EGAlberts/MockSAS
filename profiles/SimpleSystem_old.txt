@@ -1,4 +1,5 @@
-SingularContext{arms: { ThreeServers: truncnorm(0.0,1.0,0.715,0.04) 
+SingularContext{arms: { 
+	ThreeServers: truncnorm(0.0,1.0,0.715,0.04) 
 	SixServers:      truncnorm(0.0,1.0,0.614,0.06) 
 	EightServers:    truncnorm(0.0,1.0,0.508,0.06) 
 	ElevenServers:   truncnorm(0.0,1.0,0.348,0.06) 
