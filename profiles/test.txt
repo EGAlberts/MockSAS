@@ -1,6 +1,0 @@
-1337
-Warmup{A1: inactive() A2: inactive()}
-Hello{A1: normal(10,10) A2: normal(5,5)} 
-Goodbye{A1: truncnorm(0.0, 1.0, 0.3, 0.1) A2:  truncnorm(0.0, 1.0, 0.9, 0.1)}
-Trace: (Goodbye,500)
-

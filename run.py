@@ -1,5 +1,4 @@
 
-from turtle import position
 from masced_bandits.bandits import init_bandit
 from masced_bandits.bandit_options import initialize_arguments
 from environmentgrammar import environment_grammar, EnvironmentTransformer
@@ -35,14 +34,12 @@ SWIM_ORDERING = {"UCB-TN" : 1,
 "DUCB-0.89" : 15}
 plt.style.use('seaborn-bright')
 parser = Lark(environment_grammar)
-mission_statement = "profiles/DynamicSystem.txt"
+mission_statement = "profiles/SWIMProfile.txt"
 
 sys_name = mission_statement.split(".txt")[0]
 
 result_path = "results/" + sys_name + "/" 
 os.makedirs(result_path, exist_ok=True)
-
-# input(sys.argv)
 
 NUM_SEEDS = int(sys.argv[1])
 CSV_name = str(sys.argv[2])
@@ -129,10 +126,6 @@ for i in range(NUM_SEEDS):
         final_res[policy]["match_swim"].append(1 if ((ranking.index(policy)+1) == SWIM_ORDERING[policy]) else 0)
         final_res[policy]["positions"].append(ranking.index(policy)+1)
 
-#Average Position 
-#SWIM as a global truth
-#Kendall-TAU
-
 
 #SWIM
 
@@ -185,7 +178,7 @@ for i, datum in enumerate(boxplot_data):
 
 
 
-with open(CSV_name, 'w', newline='') as csvfile:
+with open(result_path + CSV_name, 'w', newline='') as csvfile:
     spamwriter = csv.writer(csvfile)
     for the_row in all_rows:
         spamwriter.writerow(the_row)
