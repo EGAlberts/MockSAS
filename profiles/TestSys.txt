@@ -1,10 +1,10 @@
 StochasticContext{
 	features: {
-		noise_due_service_time: truncnorm(0.0,0.5,0.2,0.2)
+		noise_due_service_time: truncnorm(0.0,0.5,0.2,0.2) 
 		service_time: 10
 		some_value: 0.715 
 	}
 	arms: { 
-	ThreeServers: truncnorm(0.0,myfunction(noise_due_service_time, 20),some_value,0.04) 
+	ThreeServers: normal(0.1,0.1) 
 	} }
 Trace: (StochasticContext, 500)
