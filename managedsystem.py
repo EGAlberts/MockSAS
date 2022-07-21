@@ -62,7 +62,7 @@ class MockSAS:
             if(reward_distributions):
                 reward = next(reward_distributions[self.current_action])
                 #add check for none reward due to inactive arm.
-                self.current_action = self.policy.start_strategy(reward)
+                self.current_action = self.policy.get_next_arm(reward)
 
                 self.average_reward = self.average_reward + ((1/self.round) * (reward - self.average_reward))
                 self.avg_rw_record.append(self.average_reward)
